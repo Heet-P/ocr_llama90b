@@ -8,8 +8,9 @@ router = APIRouter()
 
 @router.post("/upload", response_model=dict)
 async def upload_form(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
-    if file.content_type != "application/pdf":
-        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+    allowed_types = ["application/pdf", "image/jpeg", "image/png", "image/jpg"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Only PDF and Image files (JPEG, PNG) are allowed")
 
     try:
         # Generate unique filename
@@ -43,7 +44,7 @@ async def upload_form(background_tasks: BackgroundTasks, file: UploadFile = File
         form_id = data.data[0]['id']
         
         # Trigger Background OCR
-        background_tasks.add_task(process_form_background, form_id, content)
+        background_tasks.add_task(process_form_background, form_id, content, file.content_type)
         
         return {"message": "Form uploaded successfully, processing started", "form": data.data[0]}
 

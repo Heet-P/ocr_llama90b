@@ -1,29 +1,83 @@
-from doctr.io import DocumentFile
-from doctr.models import ocr_predictor
-import io
-from functools import lru_cache
+import requests
+import base64
+import os
 import asyncio
+from typing import Dict, Any
 
 class OCRService:
     def __init__(self):
-        # Load the model once (this might take time)
-        print("Loading Doctr OCR model...")
-        self.model = ocr_predictor(det_arch='db_resnet50', reco_arch='crnn_vgg16_bn', pretrained=True)
-        print("Doctr OCR model loaded.")
+        self.api_key = os.environ.get("NVIDIA_API_KEY")
+        self.invoke_url = "https://integrate.api.nvidia.com/v1/chat/completions"
+        if not self.api_key:
+            print("WARNING: NVIDIA_API_KEY not found in environment variables.")
 
-    def process_pdf(self, file_content: bytes) -> dict:
+    def process_document(self, file_content: bytes, content_type: str) -> Dict[str, Any]:
         """
-        Process PDF content bytes and return structured OCR data.
+        Process PDF or Image content bytes and return structured OCR data.
+        Uses NVIDIA NIM meta/llama-3.2-90b-vision-instruct model.
         """
+        if not self.api_key:
+             raise ValueError("NVIDIA_API_KEY is not set")
+
         try:
-            # Load document from bytes
-            doc = DocumentFile.from_pdf(file_content)
+            # Encode image/PDF content to base64
+            b64_content = base64.b64encode(file_content).decode('utf-8')
             
-            # Predict
-            result = self.model(doc)
+            # Construct the media type string
+            media_type = content_type
             
-            # Serialize result to JSON-compatible dict
-            return result.export()
+            # NVIDIA API Payload
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Accept": "application/json"
+            }
+
+            payload = {
+                "model": "meta/llama-3.2-90b-vision-instruct",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Extract all text from this document. Preserve the structure as much as possible."
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{media_type};base64,{b64_content}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "max_tokens": 1024,
+                "temperature": 0.2,
+                "top_p": 0.7,
+                "stream": False
+            }
+            
+            print(f"DEBUG: Sending request to {self.invoke_url}")
+            print(f"DEBUG: Content-Type: {media_type}")
+
+            response = requests.post(self.invoke_url, headers=headers, json=payload)
+            
+            if response.status_code != 200:
+                print(f"DEBUG: API Error Status: {response.status_code}")
+                try:
+                    print(f"DEBUG: API Error Body: {response.json()}")
+                except:
+                    print(f"DEBUG: API Error Body: {response.text}")
+            
+            response.raise_for_status() # Raise error for bad status codes
+            
+            response_json = response.json()
+            content = response_json['choices'][0]['message']['content']
+            
+            # Return in a structure similar to what analyzer expects, or just the raw text
+            # We'll return a simple dict with the text, letting analyzer handle it.
+            return {"text": content}
+
         except Exception as e:
             print(f"OCR Error: {e}")
             raise e
@@ -37,37 +91,44 @@ def get_ocr_service():
         _ocr_service = OCRService()
     return _ocr_service
 
-async def process_form_background(form_id: str, file_content: bytes):
+async def process_form_background(form_id: str, file_content: bytes, content_type: str = "application/pdf"):
     """
     Background task to process form OCR and update database.
     """
     from app.db.supabase import supabase
     
     try:
-        print(f"Starting OCR for form {form_id}")
+        print(f"Starting OCR for form {form_id} with type {content_type}")
         
         # Update status to processing
         supabase.table("forms").update({"status": "processing"}).eq("id", form_id).execute()
         
-        # Run OCR (CPU intensive, run in thread pool if needed, but for now direct)
-        # Note: Doctr is synchronous. To avoid blocking the event loop, we should run it in an executor.
         ocr_service = get_ocr_service()
         
+        # Requests is synchronous, so run in executor to avoid blocking event loop
         loop = asyncio.get_event_loop()
-        ocr_data = await loop.run_in_executor(None, ocr_service.process_pdf, file_content)
+        ocr_data = await loop.run_in_executor(None, ocr_service.process_document, file_content, content_type)
         
         # Run Analysis
-        from app.core.form_parser.analyzer import analyzer
-        schema = await analyzer.analyze_form(ocr_data)
+        # from app.core.form_parser.analyzer import analyzer
+        # schema = await analyzer.analyze_form(ocr_data)
+        
+        # SKIP ANALYSIS as requested - just return raw text wrapped in schema structure
+        schema = {
+            "title": "Extracted Text",
+            "description": "Raw text extracted from OCR", 
+            "fields": [],
+            "raw_text": ocr_data.get("text", "")
+        }
 
         # Update database with result
         supabase.table("forms").update({
             "status": "ready", 
-            "ocr_data": ocr_data,
+            "ocr_data": ocr_data, # Store the raw text
             "form_schema": schema
         }).eq("id", form_id).execute()
         
-        print(f"OCR & Analysis completed for form {form_id}")
+        print(f"OCR completed for form {form_id} (Analysis skipped)")
         
     except Exception as e:
         print(f"Error processing form {form_id}: {e}")

@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     SUPABASE_URL: str
     SUPABASE_KEY: str
     GOOGLE_API_KEY: str
+    NVIDIA_API_KEY: str | None = None
     
     class Config:
         env_file = ".env"

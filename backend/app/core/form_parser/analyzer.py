@@ -7,8 +7,14 @@ class FormAnalyzer:
 
     def _ocr_to_text(self, ocr_data: dict) -> str:
         """
-        Convert complex Doctr JSON to simple text representation for the LLM.
+        Convert OCR data to simple text representation for the LLM.
+        Handled new simple format {"text": "..."} or legacy Doctr format.
         """
+        # New simplified format from NVIDIA NIM
+        if isinstance(ocr_data, dict) and 'text' in ocr_data:
+            return ocr_data['text']
+            
+        # Fallback/Legacy Doctr format
         text_content = ""
         try:
             pages = ocr_data.get('pages', [])
@@ -22,7 +28,7 @@ class FormAnalyzer:
                         text_content += line_text + "\n"
                     text_content += "\n"
         except Exception as e:
-            text_content = str(ocr_data) # Fallback
+            text_content = str(ocr_data) # Global fallback
             
         return text_content
 
