@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, User, Bot, Loader2, Download, AlertCircle } from 'lucide-react';
+import { Loader2, Download, AlertCircle, FileText, Send } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { startChat, sendMessage, generatePDF } from '../lib/api';
 
@@ -92,26 +92,29 @@ export function ChatSection({ formId, onHighlightChange }: ChatSectionProps) {
     };
 
     return (
-        <div className="flex flex-col h-full w-full rounded-xl border border-slate-700 bg-[#1e1e1e] shadow-xl overflow-hidden relative">
+        <div className="w-full h-full flex flex-col bg-[#f0f0eb] border-3 border-[#181710] shadow-[4px_0_0_0_rgba(0,0,0,1)] z-10 rounded-xl overflow-hidden relative">
             {/* Header */}
-            <div className="flex items-center justify-between bg-[#252526] px-4 py-3 border-b border-slate-700/50">
-                <div className="flex items-center gap-2">
-                    <div className="size-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span className="text-slate-300 font-medium text-sm">AI Assistant Active</span>
+            <div className="flex items-center justify-between whitespace-nowrap border-b-3 border-[#181710] bg-white px-4 py-3 z-20 relative">
+                <div className="flex items-center gap-3 text-[#181710]">
+                    <div className="size-8 bg-primary border-2 border-[#181710] flex items-center justify-center shadow-neo-sm rounded-lg">
+                        <FileText size={16} strokeWidth={3} />
+                    </div>
+                    <div>
+                        <h2 className="text-[#181710] text-sm font-bold leading-tight tracking-[-0.015em] uppercase truncate max-w-[150px]">Form Session</h2>
+                        <span className="text-[10px] font-bold bg-[#181710] text-white px-2 py-0.5 rounded-full inline-block">LIVE EDITING</span>
+                    </div>
                 </div>
                 {downloadUrl ? (
                     <a
                         href={downloadUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center gap-2 text-xs font-bold text-white bg-green-600 px-3 py-1.5 rounded-md hover:bg-green-700 transition"
+                        className="flex items-center justify-center overflow-hidden rounded-lg h-8 bg-accent-green border-2 border-[#181710] text-[#181710] gap-1 text-xs font-bold shadow-neo-sm neo-button hover:bg-green-300 transition-transform px-3"
                     >
-                        <Download size={14} />
-                        Download PDF
+                        <Download size={16} strokeWidth={3} />
+                        <span>Download</span>
                     </a>
                 ) : (
-                    // Show Generate button if form is done but no URL (retry case)
-                    // We need a way to track if form is done in state, or just infer it
                     <button
                         onClick={async () => {
                             if (!formId || !sessionId) return;
@@ -126,61 +129,70 @@ export function ChatSection({ formId, onHighlightChange }: ChatSectionProps) {
                                 setIsLoading(false);
                             }
                         }}
-                        className="flex items-center gap-2 text-xs font-bold text-white bg-primary px-3 py-1.5 rounded-md hover:bg-blue-700 transition"
+                        className="flex items-center justify-center overflow-hidden rounded-lg h-8 bg-primary border-2 border-[#181710] text-[#181710] gap-1 text-xs font-bold shadow-neo-sm neo-button hover:bg-[#ffe04d] transition-transform px-3"
                     >
-                        <Download size={14} />
-                        Generate PDF
+                        <Download size={16} strokeWidth={3} />
+                        <span>Generate</span>
                     </button>
                 )}
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 custom-scrollbar bg-[#f8f8f5]">
                 {error && (
-                    <div className="flex items-center gap-2 p-3 text-red-400 bg-red-900/20 border border-red-900/50 rounded-lg text-sm">
+                    <div className="flex items-center gap-2 p-3 text-[#181710] bg-red-400 border-2 border-[#181710] shadow-neo-sm rounded-lg text-sm font-bold">
                         <AlertCircle size={16} />
                         {error}
                     </div>
                 )}
 
+                <div className="text-center py-2">
+                    <span className="bg-[#181710] text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                        Today, {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                </div>
+
                 {messages.map((msg, idx) => (
                     <div
                         key={idx}
                         className={cn(
-                            "flex gap-3 max-w-[85%]",
-                            msg.role === 'user' ? "ml-auto flex-row-reverse" : ""
+                            "flex items-end gap-3",
+                            msg.role === 'user' ? "justify-end" : ""
                         )}
                     >
-                        <div
-                            className={cn(
-                                "size-8 rounded-full flex items-center justify-center shrink-0",
-                                msg.role === 'user' ? "bg-slate-700" : "bg-primary"
-                            )}
-                        >
-                            {msg.role === 'user' ? <User size={16} className="text-white" /> : <Bot size={16} className="text-white" />}
+                        <div className={cn(
+                            "flex flex-col gap-1 max-w-[85%]",
+                            msg.role === 'user' ? "items-end" : "items-start"
+                        )}>
+                            <span className={cn(
+                                "text-[10px] font-bold uppercase",
+                                msg.role === 'user' ? "mr-1" : "ml-1"
+                            )}>
+                                {msg.role === 'user' ? 'You' : 'AI Assistant'}
+                            </span>
+                            <div
+                                className={cn(
+                                    "p-3 md:p-4 border-2 border-[#181710] rounded-2xl shadow-neo font-medium leading-relaxed text-sm",
+                                    msg.role === 'user'
+                                        ? "bg-accent-blue text-white rounded-br-none"
+                                        : "bg-accent-pink text-[#181710] rounded-bl-none"
+                                )}
+                            >
+                                {msg.content}
+                            </div>
                         </div>
-                        <div
-                            className={cn(
-                                "rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm",
-                                msg.role === 'user'
-                                    ? "bg-slate-700 text-white rounded-tr-sm"
-                                    : "bg-[#2d2d2d] text-slate-200 rounded-tl-sm border border-slate-700"
-                            )}
-                        >
-                            {msg.content}
-                        </div>
+
                     </div>
                 ))}
 
                 {isLoading && (
-                    <div className="flex gap-3 max-w-[85%]">
-                        <div className="size-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-                            <Bot size={16} className="text-white" />
-                        </div>
-                        <div className="bg-[#2d2d2d] border border-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
-                            <div className="size-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.3s]"></div>
-                            <div className="size-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:-0.15s]"></div>
-                            <div className="size-1.5 rounded-full bg-slate-400 animate-bounce"></div>
+                    <div className="flex items-end gap-3">
+                        <div className="flex flex-col gap-1 items-start max-w-[85%]">
+                            <span className="text-[10px] font-bold uppercase ml-1">AI Assistant</span>
+                            <div className="p-3 md:p-4 bg-accent-pink border-2 border-[#181710] rounded-2xl rounded-bl-none shadow-neo text-[#181710] font-medium leading-relaxed flex items-center gap-2 text-sm">
+                                <Loader2 className="animate-spin" size={16} strokeWidth={3} />
+                                <span>Thinking...</span>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -188,24 +200,30 @@ export function ChatSection({ formId, onHighlightChange }: ChatSectionProps) {
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-[#252526] border-t border-slate-700/50">
-                <form onSubmit={handleSend} className="relative flex items-center gap-2">
-                    <input
-                        type="text"
-                        name="chat-input"
-                        id="chat-input"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Type your answer..."
-                        className="w-full bg-[#1e1e1e] border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary placeholder:text-slate-500"
-                        disabled={isLoading || !!error}
-                    />
+            <div className="p-4 bg-white border-t-3 border-[#181710]">
+                <form onSubmit={handleSend} className="relative flex items-end gap-2">
+                    <div className="flex-1 relative">
+                        <textarea
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSend(e);
+                                }
+                            }}
+                            placeholder="Type instructions..."
+                            className="w-full bg-[#f8f8f5] border-2 border-[#181710] rounded-xl px-4 py-3 text-[#181710] placeholder-gray-500 focus:outline-none focus:ring-0 focus:border-[#181710] focus:shadow-neo-sm resize-none font-medium transition-shadow items-center flex"
+                            rows={1}
+                            disabled={isLoading || !!error}
+                        />
+                    </div>
                     <button
                         type="submit"
                         disabled={isLoading || !input.trim() || !!error}
-                        className="absolute right-2 p-1.5 rounded-lg bg-primary text-white hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-primary transition-colors"
+                        className="bg-primary hover:bg-[#ffe04d] disabled:opacity-50 text-[#181710] border-2 border-[#181710] rounded-xl w-12 h-[52px] flex items-center justify-center shadow-neo-sm neo-button shrink-0 transition-colors"
                     >
-                        {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                        {isLoading ? <Loader2 className="animate-spin" size={20} strokeWidth={3} /> : <Send size={20} strokeWidth={3} />}
                     </button>
                 </form>
             </div>

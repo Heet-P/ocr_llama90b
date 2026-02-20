@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
@@ -16,20 +16,15 @@
 
 @layer base {
   body {
-    @apply font-sans bg-background-light text-slate-900;
+    @apply font-sans bg-background-light text-text-main;
+    background-image: radial-gradient(#000 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 }
 
 @layer utilities {
-  .bg-dot-grid {
-    background-image: radial-gradient(#94a3b8 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+  .neo-button:active {
+    transform: translate(6px, 6px);
+    box-shadow: 0px 0px 0px 0px #000000;
   }
 }

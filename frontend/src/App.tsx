@@ -100,7 +100,7 @@ function App() {
   };
 
   return (
-    <Layout>
+    <Layout onNavigate={setView} currentView={view}>
       <div className="text-center mb-10 space-y-3">
         <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
           AI Form Assistant
@@ -132,9 +132,9 @@ function App() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch max-w-6xl mx-auto w-full">
             {/* Left Column */}
-            <div className="lg:col-span-7">
+            <div className="w-full flex h-full">
               <UploadSection
                 onFileSelect={handleFileSelect}
                 status={status}
@@ -145,13 +145,13 @@ function App() {
             </div>
 
             {/* Right Column - Placeholder */}
-            <div className="lg:col-span-5">
-              <div className="h-[400px] rounded-xl border-2 border-dashed border-slate-700/50 flex flex-col items-center justify-center text-slate-500 p-8 text-center bg-[#1e1e1e]/50">
-                <div className="size-16 rounded-full bg-slate-800 flex items-center justify-center mb-4">
-                  <span className="text-2xl">🤖</span>
+            <div className="w-full flex h-full">
+              <div className="w-full h-full min-h-[400px] rounded-xl border-4 border-dashed border-[#181710] bg-white shadow-neo-lg flex flex-col items-center justify-center text-[#181710] p-8 text-center transition-transform hover:-translate-y-1 hover:-translate-x-1 hover:shadow-neo-xl">
+                <div className="size-20 rounded-full bg-primary border-4 border-[#181710] flex items-center justify-center mb-6 shadow-neo transform -rotate-6">
+                  <span className="text-4xl">🤖</span>
                 </div>
-                <p className="font-medium text-slate-300">Assistant Waiting</p>
-                <p className="text-sm mt-1">Upload a document to start the conversation.</p>
+                <p className="font-black text-2xl uppercase tracking-tight text-[#181710]">Assistant Waiting</p>
+                <p className="font-bold text-[#181710]/70 mt-3 text-lg">Upload a document to start the conversation.</p>
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Loader2, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { api } from '../lib/api';
 
 interface DocumentViewerProps {
@@ -102,49 +102,58 @@ export function DocumentViewer({ formId, highlightTerm }: DocumentViewerProps) {
     // On screen, we fit it to container.
 
     return (
-        <div className="flex flex-col h-full border border-slate-700 bg-[#1e1e1e] rounded-xl shadow-xl overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between bg-[#252526] px-4 py-3 border-b border-slate-700/50">
-                <span className="text-slate-300 font-medium text-sm flex items-center gap-2">
-                    <Search size={14} className="text-primary" />
-                    Document Viewer
-                </span>
-                <div className="flex items-center gap-2">
+        <div className="flex flex-col h-full bg-[#f8f8f5] border-3 border-[#181710] rounded-xl shadow-[4px_0_0_0_rgba(0,0,0,1)] overflow-hidden relative z-10">
+            {/* Header / Toolbar Top */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white px-4 py-3 border-b-3 border-[#181710] gap-3 z-20 relative">
+                <div className="flex items-center gap-3">
+                    <span className="bg-[#181710] text-[#00f090] p-1.5 rounded text-sm font-bold shadow-neo-sm border-2 border-[#181710] flex items-center justify-center">
+                        <Search size={18} strokeWidth={3} />
+                    </span>
+                    <span className="text-[#181710] font-black uppercase tracking-tight text-sm">
+                        Live Preview
+                    </span>
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center gap-2 bg-[#f0f0eb] border-2 border-[#181710] rounded-lg p-1 shadow-neo-sm">
                     <button
                         onClick={() => setPageIdx(p => Math.max(1, p - 1))}
-                        className="p-1 hover:bg-slate-700 rounded text-slate-300 disabled:opacity-50"
+                        className="p-1 hover:bg-[#181710] hover:text-white rounded text-[#181710] font-bold transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-[#181710]"
                         disabled={pageIdx <= 1}
                     >
-                        <ChevronLeft size={16} />
+                        <ChevronLeft size={20} strokeWidth={3} />
                     </button>
-                    <span className="text-xs text-slate-400">Page {pageIdx}</span>
+                    <span className="text-xs font-bold text-[#181710] px-2 uppercase">Page {pageIdx}</span>
                     <button
                         onClick={() => setPageIdx(p => p + 1)}
-                        className="p-1 hover:bg-slate-700 rounded text-slate-300"
+                        className="p-1 hover:bg-[#181710] hover:text-white rounded text-[#181710] font-bold transition-colors"
                     >
-                        <ChevronRight size={16} />
+                        <ChevronRight size={20} strokeWidth={3} />
                     </button>
                 </div>
             </div>
 
-            {/* Viewer */}
-            <div className="flex-1 relative overflow-auto bg-[#111] flex justify-center p-4">
+            {/* Viewer Area */}
+            <div className="flex-1 relative overflow-auto bg-[#e5e5e0] flex items-start justify-center p-4 md:p-8">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 2px, transparent 2px)', backgroundSize: '24px 24px' }}></div>
+
                 {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                        <Loader2 className="animate-spin text-primary" />
+                    <div className="flex flex-col items-center justify-center h-full gap-3">
+                        <Loader2 className="animate-spin text-primary" size={40} strokeWidth={3} />
+                        <span className="font-bold text-[#181710] uppercase tracking-widest text-sm">Loading Document...</span>
                     </div>
                 ) : (
-                    <div className="relative shadow-2xl inline-block leading-none">
-                        {/* Image */}
+                    <div className="relative shadow-[8px_8px_0_0_rgba(0,0,0,0.15)] inline-block leading-none border-4 border-[#181710] bg-white transition-transform hover:-translate-y-1 hover:-translate-x-1 duration-300">
+                        {/* Image Render */}
                         {imageUrl && (
                             <img
                                 src={imageUrl}
                                 alt="Page"
-                                className="block max-w-full h-auto border border-slate-700"
-                                style={{ maxHeight: 'calc(100vh - 200px)' }}
+                                className="block max-w-full h-auto"
+                                style={{ maxHeight: 'calc(100vh - 250px)' }}
                             />
-                        )
-                        }
+                        )}
 
                         {/* Highlights */}
                         {/* 
@@ -173,37 +182,43 @@ export function DocumentViewer({ formId, highlightTerm }: DocumentViewerProps) {
                 )}
             </div>
 
-            {/* Status Bar */}
-            {
-                highlightTerm && (
-                    <div className="bg-[#252526] px-4 py-2 text-xs text-slate-400 border-t border-slate-700/50 flex justify-between">
-                        <span>Searching: <span className="text-primary font-bold">{highlightTerm}</span></span>
-                        <span>{isSearching ? 'Scanning...' : `Found ${highlights.length} matches`}</span>
+            {/* Status Bar / Bottom Toolbar */}
+            {highlightTerm ? (
+                <div className="bg-white px-4 py-3 border-t-3 border-[#181710] flex justify-between items-center z-20 relative">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[#181710] font-bold text-xs uppercase">Searching:</span>
+                        <span className="bg-primary text-[#181710] font-black px-2 py-0.5 rounded border-2 border-[#181710] shadow-neo-sm text-xs">
+                            {highlightTerm}
+                        </span>
                     </div>
-                )
-            }
-        </div >
+                    <span className="text-[#181710] font-bold text-xs bg-[#f0f0eb] px-2 py-1 rounded border-2 border-[#181710]">
+                        {isSearching ? 'Scanning...' : `Found ${highlights.length} matches`}
+                    </span>
+                </div>
+            ) : (
+                <div className="bg-white px-4 py-3 border-t-3 border-[#181710] flex justify-between items-center z-20 relative">
+                    <span className="text-[#181710] font-bold text-xs uppercase text-slate-500">Document Ready</span>
+                </div>
+            )}
+        </div>
     );
 }
 
-// Helper to render the box. We need to handle the scaling logic here.
-// Since we don't know the exact CSS Pixel dimensions, we might be off.
-// Let's try to assume the image is rendered natural size for now, or just skip the visual box if it's too hard.
-// User asked for "Highlight the exact source text".
-// Let's try CSS `mix-blend-mode` overlay.
-
+// Helper to render the box with Neo styling overlay
 function HighlightBox({ rect }: { rect: [number, number, number, number] }) {
-    // Rect is now [x0%, y0%, x1%, y1%] (0.0 to 1.0)
-
     return (
         <div
-            className="absolute border-2 border-red-500 bg-red-500/30 pointer-events-none transition-all duration-300"
+            className="absolute border-3 border-[#181710] bg-accent-green/40 shadow-neo-sm pointer-events-none transition-all duration-300 z-10"
             style={{
                 left: `${rect[0] * 100}%`,
                 top: `${rect[1] * 100}%`,
                 width: `${(rect[2] - rect[0]) * 100}%`,
                 height: `${(rect[3] - rect[1]) * 100}%`,
             }}
-        />
+        >
+            <div className="absolute -top-3 -right-3 size-4 bg-[#181710] rounded-full flex items-center justify-center animate-pulse">
+                <div className="size-1.5 bg-primary rounded-full"></div>
+            </div>
+        </div>
     );
 }

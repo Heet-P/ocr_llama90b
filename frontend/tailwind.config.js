@@ -7,30 +7,30 @@ export default {
     theme: {
         extend: {
             colors: {
-                "primary": "#1132d4",
-                "background-light": "#f6f6f8",
-                "background-dark": "#101322",
+                "primary": "#ffd400",
+                "secondary": "#ff90e8",
+                "accent-blue": "#23a6d5",
+                "accent-green": "#00f090",
+                "accent-purple": "#a29bfe",
+                "accent-orange": "#fdcb6e",
+                "background-light": "#fffdf5",
+                "background-dark": "#1a1a1a",
+                "text-main": "#000000",
             },
             fontFamily: {
-                "display": ["Inter", "sans-serif"],
-                "sans": ["Inter", "sans-serif"],
-            },
-            borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem" },
-            backgroundImage: {
-                'dot-pattern': 'radial-gradient(#cbd5e1 1px, transparent 1px)',
+                "display": ["Space Grotesk", "sans-serif"],
+                "sans": ["Space Grotesk", "sans-serif"]
             },
             boxShadow: {
-                'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
-                'inner-light': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)',
+                "neo": "6px 6px 0px 0px #000000",
+                "neo-sm": "3px 3px 0px 0px #000000",
+                "neo-lg": "10px 10px 0px 0px #000000",
+                "neo-hover": "2px 2px 0px 0px #000000",
+                "neo-flat": "0px 0px 0px 0px #000000",
             },
-            animation: {
-                'progress': 'progress-move 2s linear infinite',
-            },
-            keyframes: {
-                'progress-move': {
-                    '0%': { backgroundPosition: '100% 0' },
-                    '100%': { backgroundPosition: '-100% 0' },
-                }
+            borderWidth: {
+                "3": "3px",
+                "4": "4px",
             }
         },
     },
