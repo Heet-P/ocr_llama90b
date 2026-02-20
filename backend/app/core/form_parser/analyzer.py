@@ -44,8 +44,9 @@ class FormAnalyzer:
         INSTRUCTIONS:
         1. Identify all questions/fields that specific information is requested for.
         2. Infer the field type (text, number, date, boolean, select).
-        3. Create a helpful question for each field.
-        4. Return ONLY valid JSON.
+        3. Create a helpful question for each field. ENSURE THE QUESTION IS IN ENGLISH.
+        4. KEEP THE "label" FIELD EXACTLY AS IT APPEARS IN THE DOCUMENT. DO NOT TRANSLATE THE LABEL.
+        5. Return ONLY valid JSON.
         
         OUTPUT FORMAT:
         {{

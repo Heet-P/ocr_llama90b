@@ -80,6 +80,7 @@ class ChatService:
         User Answer: {user_message}
         
         Is this a valid answer? If yes, extract the clean value. If no, provide varied feedback.
+        IMPORTANT: Your feedback MUST ALWAYS be in English, regardless of the user's language.
         Return JSON: {{"valid": boolean, "value": any, "feedback": "string"}}
         """
         

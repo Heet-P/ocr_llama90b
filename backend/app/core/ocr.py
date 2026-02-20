@@ -28,15 +28,38 @@ class OCRService:
                 
                 print(f"DEBUG: Processing PDF with {len(doc)} pages")
                 
+                # Helper function for parallel execution
+                def process_page(args):
+                    i, page_bytes = args
+                    print(f"DEBUG: Sending Page {i+1} to API...")
+                    b64_img = base64.b64encode(page_bytes).decode('utf-8')
+                    try:
+                        text = self._perform_ocr_request(b64_img, "image/png")
+                        print(f"DEBUG: Page {i+1} completed.")
+                        return i, text
+                    except Exception as e:
+                        print(f"ERROR: Page {i+1} failed: {e}")
+                        return i, f"[Error processing page {i+1}]"
+
+                # Prepare page images
+                page_tasks = []
                 for i, page in enumerate(doc):
-                    print(f"DEBUG: Processing Page {i+1}/{len(doc)}")
                     # 2x zoom for better OCR resolution
                     pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
                     png_bytes = pix.tobytes("png")
-                    b64_img = base64.b64encode(png_bytes).decode('utf-8')
-                    
-                    page_text = self._perform_ocr_request(b64_img, f"image/png")
-                    full_text += f"\n--- Page {i+1} ---\n{page_text}"
+                    page_tasks.append((i, png_bytes))
+                
+                # Execute in parallel
+                from concurrent.futures import ThreadPoolExecutor
+                results = []
+                with ThreadPoolExecutor(max_workers=5) as executor:
+                    results = list(executor.map(process_page, page_tasks))
+                
+                # Sort by page index to maintain order
+                results.sort(key=lambda x: x[0])
+                
+                for i, text in results:
+                    full_text += f"\n--- Page {i+1} ---\n{text}"
                     
             else:
                 # Standard Image
